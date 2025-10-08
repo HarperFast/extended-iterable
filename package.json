@@ -3,7 +3,7 @@
   "author": "Harper",
   "version": "1.0.1",
   "description": "Extended iterable class, providing lazy array-like methods with automatic async and return/throw forwarding",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/harperdb/extended-iterable.git"
