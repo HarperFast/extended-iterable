@@ -100,13 +100,28 @@ describe('.mapError()', () => {
 								throw new Error('error');
 							}
 							return item * 2;
-						}).mapError()[Symbol.iterator]();
+						}).map(item => item).mapError()[Symbol.iterator]();
 						expect(mapErrorIter.next()).toEqual({ value: 2, done: false });
 						expect(mapErrorIter.next()).toEqual({ value: new Error('error'), done: false });
 						expect(mapErrorIter.next()).toEqual({ value: 6, done: false });
 						expect(mapErrorIter.next()).toEqual({ value: 8, done: false });
 						expect(mapErrorIter.next()).toEqual({ value: undefined, done: true });
 						assertReturnedThrown(data, 0, 0);
+					});
+
+					it('should return a mapped and filterable iterable with an error without a callback', () => {
+						const data = testData.syncData!(false);
+						const iter = new ExtendedIterable<number>(data);
+						const mapErrorIter = iter.filter(item => {
+							if (item === 2) {
+								throw new Error('error');
+							}
+							return item * 2;
+						}).mapError()[Symbol.iterator]();
+						expect(mapErrorIter.next()).toEqual({ value: 1, done: false });
+						expect(mapErrorIter.next()).toEqual({ value: new Error('error'), done: false });
+						expect(mapErrorIter.next()).toEqual({ value: 3, done: false });
+						assertReturnedThrown(data, 0, 1);
 					});
 
 					it('should return a mapped iterable without an error and with a callback', () => {
