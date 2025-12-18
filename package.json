@@ -1,5 +1,5 @@
 {
-  "name": "@harperdb/extended-iterable",
+  "name": "@harperfast/extended-iterable",
   "author": "Harper",
   "version": "1.0.1",
   "description": "Extended iterable class, providing lazy array-like methods with automatic async and return/throw forwarding",
