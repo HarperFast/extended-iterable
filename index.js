@@ -1,4 +1,4 @@
-export const SKIP = {};
+export const SKIP = Symbol.for('@harperdb/extended-iterable:skip');
 const DONE = {
 	value: null,
 	done: true,
