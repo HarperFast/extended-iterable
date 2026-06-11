@@ -13,10 +13,10 @@ export class TakeIterator<T> extends BaseIterator<T> {
 		this.#limit = limit;
 
 		if (typeof limit !== 'number') {
-			super.throw(new TypeError('Limit is not a number'));
+			throw new TypeError('Limit is not a number');
 		}
 		if (limit < 0) {
-			super.throw(new RangeError('Limit must be a positive number'));
+			throw new RangeError('Limit must be a positive number');
 		}
 	}
 

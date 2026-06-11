@@ -42,20 +42,20 @@ jobs:
         payload: |
           {
             "channel": "${{ secrets.SLACK_CHANNEL_ID }}",
-            "text": "New extended-iterable release: v${{ needs.check.outputs.version }}",
+            "text": "New extended-iterable release: ${{ github.event.release.tag_name }}",
             "blocks": [
               {
                 "type": "header",
                 "text": {
                   "type": "plain_text",
-                  "text": "New extended-iterable release: v${{ needs.check.outputs.version }}"
+                  "text": "New extended-iterable release: ${{ github.event.release.tag_name }}"
                 }
               },
               {
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "https://github.com/harperdb/rocksdb-prebuilds/releases/tag/v${{ needs.check.outputs.version }}"
+                  "text": "https://github.com/harperdb/extended-iterable/releases/tag/${{ github.event.release.tag_name }}"
                 }
               }
             ]

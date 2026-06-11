@@ -50,9 +50,13 @@ export class ConcatIterator<T> extends BaseIterator<T> {
 
 	return(): IteratorResult<T> | Promise<IteratorResult<T>> | any {
 		if (this.#secondIterator?.return) {
-			const result = this.#secondIterator.return();
-			if (result instanceof Promise) {
-				return result.then(() => super.return());
+			try {
+				const result = this.#secondIterator.return();
+				if (result instanceof Promise) {
+					return result.then(() => super.return(), () => super.return());
+				}
+			} finally {
+				return super.return();
 			}
 		}
 		return super.return();

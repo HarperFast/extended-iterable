@@ -184,7 +184,11 @@ export class ExtendedIterable<T> {
 		while (!result.done) {
 			if (currentIndex === index) {
 				if (iterator.return) {
-					return (iterator.return(result.value) as IteratorReturnResult<T>).value;
+					const returnResult = iterator.return(result.value);
+					if (returnResult instanceof Promise) {
+						return returnResult.then(r => r.value);
+					}
+					return (returnResult as IteratorReturnResult<T>).value;
 				}
 				return result.value;
 			}
@@ -739,6 +743,9 @@ export class ExtendedIterable<T> {
 
 		// handle case where we need to get initial value from first result
 		if (!hasAccumulator) {
+			if (currentResult.done) {
+				throw new TypeError('Reduce of empty iterable with no initial value');
+			}
 			const firstValue = currentResult.value;
 			accumulator = firstValue as unknown as U;
 			index = 1;
