@@ -14,10 +14,10 @@ export class DropIterator<T> extends BaseIterator<T> {
 		this.#count = count;
 
 		if (typeof count !== 'number') {
-			throw new TypeError('Count is not a number');
+			super.throw(new TypeError('Count is not a number'));
 		}
 		if (count < 0) {
-			throw new RangeError('Count must be a positive number');
+			super.throw(new RangeError('Count must be a positive number'));
 		}
 	}
 
