@@ -17,6 +17,7 @@
     "lint": "oxlint",
     "prepublishOnly": "npm run build",
     "test": "vitest",
+    "test:integration": "vitest run",
     "type-check": "tsc --noEmit"
   },
   "repository": {
