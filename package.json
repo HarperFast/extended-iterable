@@ -13,7 +13,8 @@
     "lazy"
   ],
   "scripts": {
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "test": "node --test test/*.test.js"
   },
   "type": "module",
   "module": "./index.js",
