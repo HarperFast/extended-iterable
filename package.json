@@ -14,7 +14,10 @@
   ],
   "scripts": {
     "build": "rollup -c",
-    "test": "node --test test/*.test.js"
+    "prepack": "npm run build",
+    "pretest": "npm run build",
+    "test": "node --test test/*.test.js",
+    "prepublishOnly": "npm test"
   },
   "type": "module",
   "module": "./index.js",
