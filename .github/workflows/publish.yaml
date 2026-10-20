@@ -21,6 +21,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      # Build and test without the npm token in the environment; publish skips the lifecycle
+      # scripts, so rollup never runs with the token.
+      - name: Build and test
+        run: npm test
+
       - name: Get version from package.json
         id: get-version
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
@@ -28,7 +33,7 @@ jobs:
       - name: Publish to npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --tag ${{ github.event.release.prerelease && 'next' || 'latest' }}
+        run: npm publish --ignore-scripts --tag ${{ github.event.release.prerelease && 'next' || 'latest' }}
 
       - name: Send Slack notification
         uses: slackapi/slack-github-action@v2.0.0

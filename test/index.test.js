@@ -3,8 +3,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import * as esm from '../index.js';
 
-// Harper and rocksdb-js load the package with require(), which resolves to the
-// CommonJS build, so every behavior is checked against both entries.
+// Harper and rocksdb-js load the package with require(), which resolves to dist/index.cjs.
 const cjs = createRequire(import.meta.url)('@harperfast/extended-iterable');
 
 test('require() loads the CommonJS build, not the ES module', () => {
