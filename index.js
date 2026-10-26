@@ -417,7 +417,8 @@ export class ExtendedIterable {
 				}
 				resolve((iterable._asArray = array));
 			}
-			next(iterator.next());
+			// the returned chain only exists for async steps; its rejection is the only error path
+			next(iterator.next())?.catch(reject);
 		});
 		promise.iterable = this;
 		return this._asArray || (this._asArray = promise);

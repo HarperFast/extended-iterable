@@ -63,3 +63,89 @@ test('iterating does not keep the iterator on the iterable', () => {
 	assert.deepEqual([...flatMapped], [1, 2, 3, 4, 5]);
 	assert.equal(flatMapped.next().value, 2);
 });
+
+// An iterable whose iterator returns promises from next(), as async sources do.
+// `steps` entries: a value, or an Error to reject with.
+function asyncSource(steps, counts = { returns: 0 }) {
+	const iterable = new ExtendedIterable();
+	iterable.iterate = () => {
+		let i = 0;
+		return {
+			next() {
+				if (i >= steps.length) return { done: true, value: undefined };
+				const step = steps[i++];
+				return step instanceof Error
+					? Promise.reject(step)
+					: Promise.resolve({ value: step });
+			},
+			return() {
+				counts.returns++;
+				return { done: true, value: undefined };
+			},
+		};
+	};
+	return iterable;
+}
+
+test('asArray of a synchronous source is an immediate array', () => {
+	const result = source().map((x) => x * 2).asArray;
+	assert.ok(Array.isArray(result));
+	assert.deepEqual(result, [2, 4, 6, 8]);
+});
+
+test('asArray resolves async iteration in order', async () => {
+	assert.deepEqual(await asyncSource([1, 2, 3]).asArray, [1, 2, 3]);
+});
+
+test('asArray rejects with the error from the first async next()', async () => {
+	const error = new Error('first step failed');
+	await assert.rejects(asyncSource([error, 2, 3]).asArray, (e) => e === error);
+});
+
+test('asArray rejects with the error from a later async next()', async () => {
+	const error = new Error('later step failed');
+	await assert.rejects(asyncSource([1, 2, error, 4]).asArray, (e) => e === error);
+});
+
+test('asArray rejects when a later next() throws synchronously after an async step', async () => {
+	const error = new Error('sync throw');
+	const iterable = new ExtendedIterable();
+	iterable.iterate = () => {
+		let i = 0;
+		return {
+			next() {
+				if (i++ === 0) return Promise.resolve({ value: 1 });
+				throw error;
+			},
+		};
+	};
+	await assert.rejects(iterable.asArray, (e) => e === error);
+});
+
+test('asArray closes a synchronous source once when the pipeline throws', async () => {
+	const error = new Error('mapper failed');
+	let returns = 0;
+	const base = new ExtendedIterable();
+	base.iterate = () => {
+		let i = 0;
+		return {
+			next: () => (i < 4 ? { value: ++i } : { done: true }),
+			return() {
+				returns++;
+				return { done: true };
+			},
+		};
+	};
+	const mapped = base.map((x) => {
+		if (x === 3) throw error;
+		return x;
+	});
+	await assert.rejects(mapped.asArray, (e) => e === error);
+	assert.equal(returns, 1);
+});
+
+test('asArray success does not call return on the source', async () => {
+	const counts = { returns: 0 };
+	assert.deepEqual(await asyncSource([1, 2, 3], counts).asArray, [1, 2, 3]);
+	assert.equal(counts.returns, 0);
+});
