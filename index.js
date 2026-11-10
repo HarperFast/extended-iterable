@@ -389,37 +389,55 @@ export class ExtendedIterable {
 		return this.iterator.next();
 	}
 	toJSON() {
-		if (this.asArray && this.asArray.forEach) {
-			return this.asArray;
+		const asArray = this.asArray;
+		if (asArray && asArray.forEach) {
+			return asArray;
 		}
 		const error = new Error(
 			'Can not serialize async iterables without first calling resolving asArray',
 		);
-		error.resolution = this.asArray;
+		error.resolution = asArray;
 		throw error;
 		//return Array.from(this)
 	}
 	get asArray() {
 		if (this._asArray) return this._asArray;
+		let failed = false;
 		let promise = new Promise((resolve, reject) => {
-			let iterator = this.iterate(true);
+			let iterator;
 			let array = [];
 			let iterable = this;
 			Object.defineProperty(array, 'iterable', { value: iterable });
+			// a failed collection is not cached, so the next asArray iterates again
+			function fail(error) {
+				failed = true;
+				iterable._asArray = undefined;
+				reject(error);
+			}
 			function next(result) {
-				while (result.done !== true) {
-					if (result.then) {
-						return result.then(next);
-					} else {
-						array.push(result.value);
+				try {
+					while (result.done !== true) {
+						if (result.then) {
+							return result.then(next, fail);
+						} else {
+							array.push(result.value);
+						}
+						result = iterator.next();
 					}
-					result = iterator.next();
+				} catch (error) {
+					return fail(error);
 				}
 				resolve((iterable._asArray = array));
 			}
-			next(iterator.next());
+			try {
+				iterator = this.iterate(true);
+				next(iterator.next());
+			} catch (error) {
+				fail(error);
+			}
 		});
 		promise.iterable = this;
+		if (failed) return promise;
 		return this._asArray || (this._asArray = promise);
 	}
 	resolveData() {
